@@ -1,0 +1,71 @@
+FROM centos:7 AS base
+ENV container docker
+MAINTAINER Pigo Chu <pigochu@gmail.com>
+
+ENV NGINX_DEFAULT_SERVER_NAME="_"
+ENV NGINX_DEFAULT_ROOT="/usr/share/nginx/html"
+
+# install packages
+RUN yum upgrade -y
+RUN yum install -y epel-release
+RUN rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm
+RUN yum-config-manager --enable remi remi-php73
+RUN yum install -y net-tools crontabs logrotate gettext unzip
+RUN yum install -y nginx php php-cli php-fpm php-opcache php-mysql composer
+RUN yum clean all
+
+# enable systemd - start
+RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
+rm -f /lib/systemd/system/multi-user.target.wants/*;\
+rm -f /etc/systemd/system/*.wants/*;\
+rm -f /lib/systemd/system/local-fs.target.wants/*; \
+rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
+rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
+rm -f /lib/systemd/system/basic.target.wants/*;\
+rm -f /lib/systemd/system/anaconda.target.wants/*;
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]
+# enable systemd - end
+
+
+RUN chown -Rf root:nginx /var/lib/php/*
+
+
+# enable service
+RUN systemctl enable crond
+RUN systemctl enable php-fpm
+RUN systemctl enable nginx
+
+
+# configure file can share
+# default webroot
+VOLUME ["/var/www" , "/var/www/html"]
+VOLUME ["/root/.composer"]
+RUN mkdir /root/.replace-files
+RUN mkdir /root/.template-files
+RUN mkdir /root/.bootscript-files
+VOLUME ["/root/.replace-files" , "/root/.template-files" , "/root/.bootscript-files"]
+
+# nginx
+COPY build-files/etc/nginx/conf.d/php-fpm.conf /etc/nginx/conf.d/php-fpm.conf
+RUN mkdir /etc/nginx/snippets
+COPY build-files/etc/nginx/snippets/* /etc/nginx/snippets
+# nginx forward request and error logs to docker log collector
+# RUN ln -sf /dev/stdout /var/log/nginx/access.log \
+#	&& ln -sf /dev/stderr /var/log/nginx/error.log
+
+# pigochu build-files
+COPY build-files/opt/pigochu /opt/pigochu
+RUN cp -f /opt/pigochu/c7-nginx-php-fpm-booted.service /etc/systemd/system/c7-nginx-php-fpm-booted.service
+RUN chmod 644 /etc/systemd/system/c7-nginx-php-fpm-booted.service
+RUN rm -f /opt/pigochu/c7-nginx-php-fpm-booted.service
+RUN chmod 700 /opt/pigochu/run.sh
+RUN systemctl enable c7-nginx-php-fpm-booted.service
+
+EXPOSE 443 80
+
+
+
+
+
+

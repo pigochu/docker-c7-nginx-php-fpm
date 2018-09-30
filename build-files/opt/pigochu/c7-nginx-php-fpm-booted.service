@@ -1,0 +1,11 @@
+[Unit]
+
+After=network.target
+
+[Service]
+ExecStart=/opt/pigochu/run.sh
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=default.target
