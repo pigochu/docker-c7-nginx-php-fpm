@@ -6,6 +6,7 @@ ENV NGINX_DEFAULT_SERVER_NAME="_"
 ENV NGINX_DEFAULT_ROOT="/usr/share/nginx/html"
 
 # install packages
+
 RUN yum upgrade -y
 RUN yum install -y epel-release
 RUN rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm
@@ -50,9 +51,13 @@ VOLUME ["/root/.replace-files" , "/root/.template-files" , "/root/.bootscript-fi
 COPY build-files/etc/nginx/conf.d/php-fpm.conf /etc/nginx/conf.d/php-fpm.conf
 RUN mkdir /etc/nginx/snippets
 COPY build-files/etc/nginx/snippets/* /etc/nginx/snippets
-# nginx forward request and error logs to docker log collector
-# RUN ln -sf /dev/stdout /var/log/nginx/access.log \
-#	&& ln -sf /dev/stderr /var/log/nginx/error.log
+
+# php
+COPY build-files/etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf
+RUN chmod 644 /etc/php-fpm.d/www.conf;\
+chown root:root /etc/php-fpm.d/www.conf;\
+chown nginx:root /var/log/php-fpm
+
 
 # pigochu build-files
 COPY build-files/opt/pigochu /opt/pigochu
