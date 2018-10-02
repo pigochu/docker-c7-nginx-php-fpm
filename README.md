@@ -14,6 +14,7 @@ Nginx + PHP-FPM base on CentOS7
   * php-pdo & pdo-mysql: enabled
   * composer installed
 * nginx enabled
+* npm installed
 * 不使用大量環境變數，而利用 VOLUME 方式取代 container 內檔案可方便做到非常有彈性的服務設定
 
 ## 建立 docker image ##
@@ -34,6 +35,7 @@ docker build -t "pigochu/c7-nginx-php-fpm" -f Dockerfile-xxx .
 * /var/www/html : 預設應用程式可以放此處
 * /var/www : 建議若有 virtual host 需求，可以在此目錄建立各 site , 並且於 VOLUME /root/.replace-files 建立 etc/nginx/conf.d 及設定檔
 * /root/.composer : 因為 PHP 應用常常使用到 composer，所以將 composer 快取也設定成 VOLUME 才能永久保存，例如 Windows 環境可以設定為。
+* /root/.npm : 某些 php framework 也會用到 npm , 所以這個也可以設定 VOLUME 來永久保存相關檔案
 * /root/.replace-files : 這個目錄是用作container啟動後尚未執行 nginx , php-fpm , crond 前，將任意檔案取代原有 container 內的檔案，使用上必須建立與 container 內目錄結構一模一樣，例如想要取代 /etc/nginx/nginx.conf，就必須在 VOLUME /root/.replace-files 內建立 etc/nginx/nginx.conf，這樣啟動 container 時，會先取代掉原本的 nginx.conf，取代時則會保留 container 原本的 owner/group/permission。如此可以有非常大的彈性來設定 nginx 或 php 或 crontab。
 * /root/.template-files: 這個目錄類似 /root/.replace-files ，但是裏頭的檔案是會利用環境變數以 envsubst 取代內容後再取代 container 內的檔案。
 * /root/.bootscript-files : 這個目錄可以放任何 script 進去，會於 container 啟動之後執行該目錄下所有的檔案
