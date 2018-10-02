@@ -1,7 +1,9 @@
 Nginx + PHP-FPM base on CentOS7
 ===============================
 
-請注意，這個 container 只適合開發用途，不適合做為正式環境，因為有開啟 systemd，所以有安全性問題
+請注意，這個 container 只適合開發或測試用途，千萬別拿來當正式環境，
+搞這東西主要是為了減少命令行操作，就是懶，
+習慣用 Kitematic 的人幾乎可以靠 UI 操作就能部屬很多專案。
 
 
 ## 特色 ##
@@ -16,6 +18,9 @@ Nginx + PHP-FPM base on CentOS7
 * nginx enabled
 * npm installed
 * 不使用大量環境變數，而利用 VOLUME 方式取代 container 內檔案可方便做到非常有彈性的服務設定
+* VOLUME 可以做到
+  * container 啟動後將自己寫的設定檔覆蓋 container 內的相同結構檔案，如 cron , nginx , php 等等的設定然後才會啟動服務
+  * container 啟動後先執行自己寫的 shell 做一些初始化動作
 
 ## 建立 docker image ##
 
