@@ -38,8 +38,8 @@ RUN systemctl enable php-fpm
 RUN systemctl enable nginx
 
 
-# configure file can share
-# default webroot
+# VOLUME
+RUN mkdir /root/.npm;  chmod 755 /root/.npm
 VOLUME ["/var/www" , "/var/www/html"]
 VOLUME ["/root/.composer"]
 VOLUME ["/root/.npm"]

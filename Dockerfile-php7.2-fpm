@@ -39,7 +39,7 @@ RUN systemctl enable nginx
 
 
 # configure file can share
-# default webroot
+RUN mkdir /root/.npm;  chmod 755 /root/.npm
 VOLUME ["/var/www" , "/var/www/html"]
 VOLUME ["/root/.composer"]
 VOLUME ["/root/.npm"]
@@ -58,7 +58,6 @@ COPY build-files/etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf
 RUN chmod 644 /etc/php-fpm.d/www.conf;\
 chown root:root /etc/php-fpm.d/www.conf;\
 chown nginx:root /var/log/php-fpm
-
 
 # pigochu build-files
 COPY build-files/opt/pigochu /opt/pigochu
