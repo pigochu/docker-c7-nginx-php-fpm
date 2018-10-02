@@ -1,0 +1,12 @@
+[Unit]
+Before=php-fpm.service nginx.service crond.service
+After=syslog.target network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/pigochu/run.sh
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
