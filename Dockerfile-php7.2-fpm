@@ -1,71 +1,79 @@
-FROM centos:7 AS base
-ENV container docker
+# Docker CentOS7 + Nginx + PHP-FPM 
+
+FROM pigochu/c7-supervisor
+
 MAINTAINER Pigo Chu <pigochu@gmail.com>
 
+# Environment for set Supervisord
+ENV SUPERVISOR_AUTOSTART_CROND=true
+ENV SUPERVISOR_AUTORESTART_CROND=true
+ENV SUPERVISOR_AUTOSTART_NGINX=true
+ENV SUPERVISOR_AUTORESTART_NGINX=true
+ENV SUPERVISOR_AUTOSTART_PHPFPM=true
+ENV SUPERVISOR_AUTORESTART_PHPFPM=true
+
+# Environment for nginx server_name and root
 ENV NGINX_DEFAULT_SERVER_NAME="_"
-ENV NGINX_DEFAULT_ROOT="/usr/share/nginx/html"
+ENV NGINX_DEFAULT_ROOT="/var/www/html"
+ENV NGINX_STDOUT_LOGFILE="/dev/stdout"
+ENV NGINX_STDERR_LOGFILE="/dev/stderr"
 
 # install packages
 
-RUN yum upgrade -y
-RUN yum install -y epel-release
-RUN rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm
-RUN yum-config-manager --enable remi remi-php72
-RUN yum install -y net-tools crontabs logrotate gettext unzip
-RUN yum install -y nginx php php-cli php-fpm php-opcache php-mysql composer npm
-RUN yum clean all
-
-# enable systemd - start
-RUN (cd /lib/systemd/system/sysinit.target.wants/; for i in *; do [ $i == systemd-tmpfiles-setup.service ] || rm -f $i; done); \
-rm -f /lib/systemd/system/multi-user.target.wants/*;\
-rm -f /etc/systemd/system/*.wants/*;\
-rm -f /lib/systemd/system/local-fs.target.wants/*; \
-rm -f /lib/systemd/system/sockets.target.wants/*udev*; \
-rm -f /lib/systemd/system/sockets.target.wants/*initctl*; \
-rm -f /lib/systemd/system/basic.target.wants/*;\
-rm -f /lib/systemd/system/anaconda.target.wants/*;
-VOLUME [ "/sys/fs/cgroup" ]
-CMD ["/usr/sbin/init"]
-# enable systemd - end
+RUN yum upgrade -y;\
+rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
+yum-config-manager --enable remi remi-php72 && \
+yum install -y net-tools crontabs logrotate unzip nginx php php-cli php-fpm php-opcache php-mysql composer npm && \
+yum clean all
 
 
-RUN chown -Rf root:nginx /var/lib/php/*
+
+# Requirement folders
+
+RUN mkdir /etc/nginx/snippets;\
+mkdir /var/run/php-fpm;\
+mkdir /var/www/sites;\
+mkdir /root/.npm;\
+ln -s /usr/share/nginx/html/index.html /var/www/html/index.html;\
+ln -s /usr/share/nginx/html/nginx-logo.png /var/www/html/nginx-logo.png;\
+ln -s /usr/share/nginx/html/poweredby.png /var/www/html/poweredby.png;\
+ln -s /dev/stdout /var/log/nginx/access.log;\
+ln -s /dev/stderr /var/log/nginx/error.log
+
+# Requirement files
+
+COPY build-files/etc/supervisord.d/* /etc/supervisord.d/
+COPY build-files/etc/nginx/* /etc/nginx/
+COPY build-files/etc/nginx/conf.d/* /etc/nginx/conf.d/
+COPY build-files/etc/nginx/snippets/* /etc/nginx/snippets/
+COPY build-files/etc/php-fpm.d/* /etc/php-fpm.d/
+COPY build-files/opt/c7supervisor/etc/init.d/* /opt/c7supervisor/etc/init.d/
 
 
-# enable service
-RUN systemctl enable crond
-RUN systemctl enable php-fpm
-RUN systemctl enable nginx
+# Permissions
 
-
-# configure file can share
-RUN mkdir /root/.npm;  chmod 755 /root/.npm
-VOLUME ["/var/www" , "/var/www/html"]
-VOLUME ["/root/.composer"]
-VOLUME ["/root/.npm"]
-RUN mkdir /root/.replace-files
-RUN mkdir /root/.template-files
-RUN mkdir /root/.bootscript-files
-VOLUME ["/root/.replace-files" , "/root/.template-files" , "/root/.bootscript-files"]
-
-# nginx
-COPY build-files/etc/nginx/conf.d/php-fpm.conf /etc/nginx/conf.d/php-fpm.conf
-RUN mkdir /etc/nginx/snippets
-COPY build-files/etc/nginx/snippets/* /etc/nginx/snippets
-
-# php
-COPY build-files/etc/php-fpm.d/www.conf /etc/php-fpm.d/www.conf
-RUN chmod 644 /etc/php-fpm.d/www.conf;\
+RUN chown root:root /opt/c7supervisor/etc/init.d/c7-nginx-php-fpm-init.sh;\
+chmod 700 /opt/c7supervisor/etc/init.d/c7-nginx-php-fpm-init.sh;\
+chown root:root /etc/nginx/nginx.template;\
+chmod 600 /etc/nginx/nginx.template;\
+chown root:root /etc/nginx/snippets/*;\
+chmod 600 /etc/nginx/snippets/*;\
 chown root:root /etc/php-fpm.d/www.conf;\
-chown nginx:root /var/log/php-fpm
+chmod 600 /etc/php-fpm.d/www.conf;\
+chown root:root /etc/supervisord.d/*;\
+chmod 600 /etc/supervisord.d/*;\
+chown -Rf root:nginx /var/lib/php/*;\
+chmod 644 /etc/php-fpm.d/www.conf;\
+chown root:root /etc/php-fpm.d/www.conf;\
+chown nginx:root /var/log/php-fpm;\
+chown root:root /root/.npm;\
+chmod 600 /root/.npm;\
+chown root:root /var/www/sites;\
+chmod 755 /var/www/sites
 
-# pigochu build-files
-COPY build-files/opt/pigochu /opt/pigochu
-RUN cp -f /opt/pigochu/c7-nginx-php-fpm-booted.service /etc/systemd/system/c7-nginx-php-fpm-booted.service
-RUN chmod 644 /etc/systemd/system/c7-nginx-php-fpm-booted.service
-RUN rm -f /opt/pigochu/c7-nginx-php-fpm-booted.service
-RUN chmod 700 /opt/pigochu/run.sh
-RUN systemctl enable c7-nginx-php-fpm-booted.service
+
+# VOLUME
+VOLUME ["/var/www/sites" , "/var/www/html" , "/root/.composer" , "/root/.npm"]
 
 EXPOSE 443 80
 
