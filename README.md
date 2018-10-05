@@ -67,7 +67,7 @@ docker build -t "pigochu/c7-nginx-php-fpm" -f Dockerfile-xxx .
 ## PHP Environment  ##
 
 - PHPRC : 可自行設定 php.ini 位置 , 預設是 /etc , 因此會讀取 /etc/php.ini , 若設定此值非 /etc，則必須另外準備 php.ini 讓 php 能讀取
-- PHP_INI_SCAN_DIR : 除了 /etc/php.d 之外，亦可再額外加入自訂目錄讓 php 載入其他 ini，例如 PHP_INI_SCAN_DIR=:/root/php.d，則代表除了 /etc/php.d 之外，也會掃 /root/php.d，這種做法則要再搭配 VOLUME /root/.replace-files 或 /root/.template-files 來置放設定檔才有辦法讀到
+- PHP_INI_SCAN_DIR : 除了 /etc/php.d 之外，亦可再額外加入自訂目錄讓 php 載入其他 ini，例如 PHP_INI_SCAN_DIR=:/root/php.d，則代表除了 /etc/php.d 之外，也會掃 /root/php.d，這種做法則要再搭配 VOLUME /docker-settings/replace-files 或 /docker-settings/template-files 來置放設定檔才有辦法讀到
 
 ## NGINX Environment ##
 
