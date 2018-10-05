@@ -38,35 +38,25 @@ http {
     server {
         listen       80 default_server;
         listen       [::]:80 default_server;
-
         server_name  ${NGINX_DEFAULT_SERVER_NAME};
-
-		root		${NGINX_DEFAULT_ROOT};
+        root         ${NGINX_DEFAULT_ROOT};
+		index		index.php index.html index.htm;
 
         # Load configuration files for the default server block.
         include /etc/nginx/default.d/*.conf;
 
         location / {
-			index  index.php index.html index.htm;
-			location ~ \.php$ {
-				include fastcgi_params;
-				fastcgi_param SCRIPT_FILENAME $request_filename;
-				fastcgi_pass php-fpm-sock;
-			}
+	
         }
 		
-		error_page 404 /404.html;
-        location = /404.html {
-                root /usr/share/nginx/html;
-                internal;
-        }
+		# include default fastcgi:php-fpm setting
+		include /etc/nginx/snippets/php-fpm.conf;
+		
+		# deny all hidden files
+		location ~* /\. {
+			deny all;
+		}
 
-        error_page 500 502 503 504 /50x.html;
-        location = /50x.html {
-                root /usr/share/nginx/html;
-                internal;
-        }
-		
     }
 
 # Settings for a TLS enabled server.
