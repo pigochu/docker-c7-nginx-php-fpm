@@ -13,6 +13,7 @@ Nginx + PHP-FPM base on CentOS7
   * php-fpm : enabled
   * php-opcache : enabled
   * php-pdo & pdo-mysql: enabled
+  * php-pgsql enabled
   * composer installed
 * nginx enabled
 * npm installed
@@ -23,19 +24,11 @@ Nginx + PHP-FPM base on CentOS7
 
 # 建立 docker image #
 
-目前尚在測試階段，所以沒有放到 DockerHub , 所以建立步驟如下
-
-1. 先建立 pigochu/c7-supervisor Image
-  * 從 https://github.com/pigochu/docker-c7-supervisor 下載專案
-  * Build : 注意 tag 一定要是 pigochu/c7-supervisor
-  
-2. 建立本專案 Image
 
 ```bash
-docker build -t "pigochu/c7-nginx-php-fpm" -f Dockerfile-xxx .
+docker build -t "pigochu/c7-nginx-php-fpm" -f Dockerfile .
 ```
 
-其中 Dockerfile-xxx 請參考目錄中所提供的各種 php-fpm 版本
 
 # 啟動說明 (務必看清楚) #
 
@@ -82,6 +75,36 @@ docker build -t "pigochu/c7-nginx-php-fpm" -f Dockerfile-xxx .
 1. 善用 Docker for Windows 推薦的 Kitematic 以 UI 來設定 VOLUME /docker-settings 做到啟動時，自動覆蓋設定檔，這樣子下次到別的地方用也不需要 Build 自己的 Image
 2. Windows Host 中可設定 COMPOSER_HOME 變數，使之能與 container 的 VOLUME /root/.composer 共用，這樣所有專案關於 composer repo , cache 等不論在 Windows Host 或 Container 內操作 composer 都會用同一份快取了。
 
+#PHP 專案開發的建議 #
+
+在 PHP 專案中建立一個 .docker 目錄，結構可能如下(請依照 CentOS 原本結構建立相對應目錄)
+
+~~~
+replace-files/	
+				etc/
+					/cron.d
+					/nginx
+							/conf.d
+							/default.d
+~~~
+
+因為這個 images 有個特異功能，會處理  VOLUME /docker-settings 下 replace-files 的檔案，將其內容覆蓋到 container ，然後才會啟動服務。
+
+如果，想要搭配自訂環境變數來啟動 container ，可以將 replace-files 改成 template-files ，而檔案內容要使用環境變數範例如下
+~~~
+server {
+    root ${NGINX_DEFAULT_SERVER_ROOT};
+	# ...
+}
+~~~
+
+當你準備好上述的目錄結構，及您所建立要覆蓋的設定檔後，請將 VOLUME /docker-settings 掛載到你專案中的 .docker，然後啟動 container 就行了。
+
+這樣都不用使用 compose，僅使用 Kitematic 就可以完成所有設定。
+
+如果你還想要做到 container 啟動後執行你的 shell 做一些初始化動作 ，請在 .docker 下建立 after-supervisord.d 或 before-supervisord.d，然後將你的 shell 放入。
+
+這些處理過程可以參考 https://github.com/pigochu/docker-c7-supervisor 這個上層 Image 的做法。
 
 
 # Maintainer #
