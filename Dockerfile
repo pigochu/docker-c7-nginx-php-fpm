@@ -43,7 +43,8 @@ COPY --chown=root:root build-files /
 
 # Permissions
 
-RUN chmod 755 /etc;  \
+RUN chown -Rf root:nginx /var/lib/php; \
+	chmod 755 /etc; \
 	chmod 600 /etc/supervisord.d/*;\
 	chmod 755 /etc/nginx; \
 	chmod -Rf 755 /etc/nginx/conf.d; \
