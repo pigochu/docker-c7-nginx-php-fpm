@@ -22,7 +22,7 @@ ENV SUPERVISOR_AUTOSTART_CROND=true \
 RUN yum upgrade -y;\
 	rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
 	yum-config-manager --enable remi remi-php72 && \
-	yum install -y net-tools crontabs logrotate unzip nginx php-cli php-fpm php-opcache php-mysql php-pgsql composer npm && \
+	yum install -y net-tools crontabs logrotate unzip nginx php-cli php-fpm php-opcache php-mysql php-pgsql php-pecl-memcache git composer npm && \
 	yum clean all && \
 	rm -rf /var/cache/yum &&\
 	rm -f /var/log/yum.log && \
@@ -43,7 +43,8 @@ COPY --chown=root:root build-files /
 
 # Permissions
 
-RUN chmod 755 /etc;  \
+RUN chown -Rf root:nginx /var/lib/php; \
+	chmod 755 /etc; \
 	chmod 600 /etc/supervisord.d/*;\
 	chmod 755 /etc/nginx; \
 	chmod -Rf 755 /etc/nginx/conf.d; \
