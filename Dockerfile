@@ -22,7 +22,7 @@ ENV SUPERVISOR_AUTOSTART_CROND=true \
 RUN yum upgrade -y;\
 	rpm -Uvh https://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
 	yum-config-manager --enable remi remi-php72 && \
-	yum install -y net-tools crontabs logrotate unzip nginx php-cli php-fpm php-opcache php-mysql php-pgsql composer npm && \
+	yum install -y net-tools crontabs logrotate unzip nginx php-cli php-fpm php-opcache php-mysql php-pgsql php-pecl-memcache git composer npm && \
 	yum clean all && \
 	rm -rf /var/cache/yum &&\
 	rm -f /var/log/yum.log && \

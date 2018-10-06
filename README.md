@@ -9,14 +9,16 @@ Nginx + PHP-FPM base on CentOS7
 # 特色 #
 
 * base on pigochu/c7-supervisor (CentOS 7 base) : https://github.com/pigochu/docker-c7-supervisor
-* php from remi repo and installed packages:
+* php 使用 remi repo 且另外安裝的模組如下 :
   * php-fpm : enabled
   * php-opcache : enabled
   * php-pdo & pdo-mysql: enabled
   * php-pgsql enabled
   * composer installed
+  * 詳細所有載入的模組請參考本文件下方以 php -m 列出的模組清單
 * nginx enabled
-* npm installed
+* nodejs and npm installed
+* git installed
 * 不使用大量環境變數，而利用 VOLUME 方式取代 container 內檔案可方便做到非常有彈性的服務設定
 * VOLUME 可以做到
   * container 啟動後將自己寫的設定檔覆蓋 container 內的相同結構檔案，如 cron , nginx , php 等等的設定然後才會啟動服務
@@ -106,6 +108,72 @@ server {
 
 這些處理過程可以參考 https://github.com/pigochu/docker-c7-supervisor 這個上層 Image 的做法。
 
+# php -m 列出載入的模組 #
+
+~~~
+[PHP Modules]
+bz2
+calendar
+Core
+ctype
+curl
+date
+dom
+exif
+fileinfo
+filter
+ftp
+gd
+gettext
+hash
+iconv
+intl
+json
+libxml
+mbstring
+memcache
+mysqli
+mysqlnd
+openssl
+pcntl
+pcre
+PDO
+pdo_mysql
+pdo_pgsql
+pdo_sqlite
+pgsql
+Phar
+posix
+readline
+Reflection
+session
+shmop
+SimpleXML
+sockets
+SPL
+sqlite3
+standard
+sysvmsg
+sysvsem
+sysvshm
+tokenizer
+wddx
+xml
+xmlreader
+xmlwriter
+xsl
+Zend OPcache
+zip
+zlib
+
+[Zend Modules]
+Zend OPcache
+~~~
+
+# PHP Framework 最小需求通過測試 #
+
+* Laravel >= 5.1
+* Yii >= 2.0
 
 # Maintainer #
 
