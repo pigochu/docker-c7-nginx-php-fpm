@@ -2,8 +2,10 @@
 
 
 # FROM pigochu/c7-supervisor
-FROM pigochu/c7-supervisor:latest
-MAINTAINER Pigo Chu <pigochu@gmail.com>
+FROM pigochu/c7-supervisor:supervisor3.x
+
+LABEL	maintainer="Pigo Chu <pigochu@gmail.com>" \
+		description="php 7.2 and nginx on centos 7"
 
 # Environment for set Supervisord and nginx
 ENV SUPERVISOR_AUTOSTART_CROND=true \
