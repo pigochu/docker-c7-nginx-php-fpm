@@ -177,5 +177,4 @@ Zend OPcache
 
 # Maintainer #
 
-Pigo Chu
-pigochu@gmail.com
+Pigo Chu <pigochu@gmail.com>
